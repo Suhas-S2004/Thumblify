@@ -27,7 +27,7 @@ const Generate = () => {
 
   const fetchThumbnail = async () => {
   if (id) {
-    const thumbnail: any = dummyThumbnails.find((thumbnail) => thumbnail.id === id);
+    const thumbnail: any = dummyThumbnails.find((thumbnail) => thumbnail._id === id);
     setThumbnail(thumbnail)
     setAdditionalDetails(thumbnail.user_prompt)
     setTitle(thumbnail.title)

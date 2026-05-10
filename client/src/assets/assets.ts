@@ -1,3 +1,4 @@
+import type { Key } from "react";
 import thumb_1 from "./thumb_1.jpg";
 import thumb_2 from "./thumb_2.jpg";
 import thumb_3 from "./thumb_3.jpg";
@@ -33,6 +34,7 @@ export interface ThumbnailRequest {
 }
 
 export interface IThumbnail {
+    id: Key | null | undefined;
     _id: string;
     userId: string;
     title: string;
