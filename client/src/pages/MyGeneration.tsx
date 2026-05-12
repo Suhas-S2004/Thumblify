@@ -1,11 +1,15 @@
 import SoftBackdrop from "../components/SoftBackdrop"
 import {  useEffect, useState } from "react"
-import { dummyThumbnails,type IThumbnail } from "../assets/assets"
-import { useNavigate } from "react-router-dom"
-import { ArrowRightIcon, DownloadIcon, Link, TrashIcon } from "lucide-react"
+import { type IThumbnail } from "../assets/assets"
+import { useNavigate,Link } from "react-router-dom"
+import { ArrowRightIcon, DownloadIcon, TrashIcon } from "lucide-react"
+import { useAuth } from "../context/AuthContext"
+import { toast } from "react-hot-toast/headless"
+import api from "../configs/api"
 
 const MyGeneration = () => {
 
+  const {isLoggedIn} = useAuth()
   const navigate = useNavigate()
 
   const aspectRatioClassMap : Record<string, string> = {
@@ -16,22 +20,45 @@ const MyGeneration = () => {
   const [thumbnails, setThumbnails] = useState<IThumbnail[]>([])
   const [loading, setLoading] = useState(false)
 
-  const fetchThumbnails = async () => {
-    setThumbnails(dummyThumbnails as unknown as IThumbnail[])
-    setLoading(false)
-  }
+ const fetchThumbnails = async () =>{
+    try {
+        setLoading(true)
+        const {data} = await api.get('/api/user/thumbnails')
+        setThumbnails(data.thumbnails || [])
+    } catch (error: any) {
+        console.error(error);
+        toast.error(error?.response?.data?.message || error.message)
+    } finally{
+        setLoading(false);
+    }
+}
 
   const handleDownload =(image_url:string) => {
-    window.open(image_url, '_blank')
+    const link = document.createElement('a');
+    link.href = image_url.replace('/upload', '/upload/fl_attachment')
+    document.body.appendChild(link);
+    link.click()
+    link.remove()
   }
 
-  const handleDelete = (id:string) => {
-    console.log(id)
-  }
+  const handleDelete = async (id: string)=>{
+    try {
+        const confirm = window.confirm('Are you sure you want to delete this thumbnail?')
+        if(!confirm) return;
+        const {data} = await api.delete(`/api/thumbnail/delete/${id}`)
+        toast.success(data.message)
+        setThumbnails(thumbnails.filter((t)=> t._id !== id));
+    } catch (error: any) {
+        console.error(error);
+        toast.error(error?.response?.data?.message || error.message)
+    }
+}
 
-  useEffect(() => {
-    fetchThumbnails()
-  }, [])
+useEffect(()=>{
+    if(isLoggedIn){
+        fetchThumbnails()
+    }
+},[isLoggedIn])
   return (
     <>
       <SoftBackdrop />
